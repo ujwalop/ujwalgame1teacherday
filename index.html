@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chidiya Udd Game</title>
+    <style>
+        /* Existing styles remain unchanged */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #87CEEB;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .logo {
+            margin-top: 20px;
+        }
+
+        .logo img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        .loading-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #333;
+            color: white;
+            font-size: 2rem;
+            animation: fadeOut 2s forwards;
+            animation-delay: 3s;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .start-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #333;
+        }
+
+        #start-btn {
+            background-color: #008CBA;
+            color: white;
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .game-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #333;
+        }
+
+        #object-display {
+            margin: 20px auto;
+            padding: 20px;
+            width: 300px;
+            height: 300px;
+            background-image: url('treeop.jpg'); /* Replace with your background image URL */
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #object-display img {
+            max-width: 100px; /* Small size for the object image */
+            max-height: 100px;
+        }
+
+        #object-name {
+            margin-top: 10px;
+            font-size: 1.2rem;
+            color: #333;
+            background-color: rgba(255, 255, 255, 0.7); /* Semi-transparent background */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .buttons {
+            margin-top: 20px;
+        }
+
+        button {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #fly-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #dont-fly-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .dashboard {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .dashboard div {
+            margin: 0 20px;
+        }
+
+        .credits {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #fff;
+            text-shadow: 2px 2px 5px #333;
+        }
+
+        .game-over {
+            display: none;
+            color: red;
+            font-size: 2rem;
+            margin-top: 20px;
+        }
+
+        .final-score {
+            display: none;
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen">Loading... Game made by Ujwal Guru</div>
+
+    <div class="start-container">
+        <button id="start-btn">Start Game</button>
+    </div>
+
+    <div class="logo">
+        <img src="1logo.png" alt="Chidiya Udd Game Logo">
+    </div>
+
+    <div class="game-container">
+        <h1>Chidiya Udd</h1>
+        <div id="object-display">
+            <img id="object-img" src="" alt="Object">
+            <div id="object-name">Object Name</div>
+        </div>
+        <div class="buttons">
+            <button id="fly-btn">Fly</button>
+            <button id="dont-fly-btn">Don't Fly</button>
+        </div>
+        <div class="dashboard">
+            <div>Score: <span id="score">0</span></div>
+            <div>Object Timer: <span id="timer">3</span></div>
+            <div>Game Timer: <span id="game-timer">120</span></div>
+        </div>
+    </div>
+
+    <div class="credits">Game made by Ujwal Guru</div>
+    <div class="game-over">Game Over! Time's up!</div>
+    <div class="final-score">Your final score is: <span id="final-score"></span></div>
+
+    <script>
+        const objects = [
+            { name: "Pigeon", canFly: true, img: "pigeon.png" },
+            { name: "Sparrow", canFly: true, img: "sparrow.png" },
+            { name: "Dog", canFly: false, img: "dog.png" },
+            { name: "Cat", canFly: false, img: "cat.png" },
+            { name: "Kite", canFly: true, img: "kite.png" },
+            { name: "Lion", canFly: false, img: "lion.png" },
+            { name: "Balloon", canFly: true, img: "balloon.png" },
+            { name: "TV", canFly: false, img: "tv.png" },
+            { name: "Penguin", canFly: false, img: "penguin.png" },
+            { name: "Comb", canFly: false, img: "comb.png" },
+            { name: "Airplane", canFly: true, img: "airplane.png" },
+            { name: "Helicopter", canFly: true, img: "helicopter.png" },
+            { name: "Fish", canFly: false, img: "fish.png" },
+            { name: "Frog", canFly: false, img: "frog.png" }
+        ];
+
+        let currentObject;
+        let score = 0;
+        let objectIntervalId;
+        let objectTimer = 3;
+        let gameTimer = 120;
+        let gameIntervalId;
+
+        function getRandomObject() {
+            return objects[Math.floor(Math.random() * objects.length)];
+        }
+
+        function displayObject() {
+            currentObject = getRandomObject();
+            const imgElement = document.getElementById('object-img');
+            const nameElement = document.getElementById('object-name');
+            imgElement.src = currentObject.img;
+            imgElement.alt = currentObject.name;
+            nameElement.textContent = currentObject.name;
+            resetObjectTimer();
+        }
+
+        function updateScore(isCorrect) {
+            if (isCorrect) {
+                score += 10;
+            } else {
+                score -= 5; // Subtract 5 points for incorrect guess
+            }
+            document.getElementById('score').textContent = score;
+        }
+
+        function resetObjectTimer() {
+            objectTimer = 3;
+            document.getElementById('timer').textContent = objectTimer;
+        }
+
+        function startObjectTimer() {
+            objectIntervalId = setInterval(() => {
+                objectTimer--;
+                document.getElementById('timer').textContent = objectTimer;
+                if (objectTimer === 0) {
+                    displayObject();
+                }
+            }, 1000);
+        }
+
+        function startGameTimer() {
+            gameIntervalId = setInterval(() => {
+                gameTimer--;
+                document.getElementById('game-timer').textContent = gameTimer;
+                if (gameTimer === 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(objectIntervalId);
+            clearInterval(gameIntervalId);
+            document.querySelector('.game-container').style.display = 'none';
+            document.querySelector('.game-over').style.display = 'block';
+            document.querySelector('.final-score').style.display = 'block';
+            document.getElementById('final-score').textContent = score;
+        }
+
+        document.getElementById('fly-btn').addEventListener('click', function () {
+            if (currentObject.canFly) {
+                updateScore(true);
+            } else {
+                updateScore(false);
+            }
+            displayObject();
+        });
+
+        document.getElementById('dont-fly-btn').addEventListener('click', function () {
+            if (!currentObject.canFly) {
+                updateScore(true);
+            } else {
+                updateScore(false);
+            }
+            displayObject();
+        });
+
+        document.getElementById('start-btn').addEventListener('click', function () {
+            document.querySelector('.start-container').style.display = 'none';
+            document.querySelector('.game-container').style.display = 'block';
+            startObjectTimer();
+            startGameTimer();
+            displayObject();
+        });
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.loading-screen').style.display = 'none';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
